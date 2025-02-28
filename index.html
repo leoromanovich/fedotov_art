@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Иван Федотов - Художник</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #37484F;
+            --secondary-color: #4E6670;
+            --accent-color: #E8A87C;
+            --light-color: #F3F3F3;
+            --text-color: #F3F3F3;
+            --dark-accent: #273238;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Main content - allow scrolling if needed */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Side navigation - now vertical on the left with title */
+        nav {
+            width: 180px;
+            background-color: var(--dark-accent);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+
+        .site-title {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            padding: 0 15px 20px 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--secondary-color);
+            text-align: center;
+        }
+
+        .site-title span {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        nav a {
+            display: block;
+            margin: 5px 15px;
+            padding: 8px 16px;
+            text-decoration: none;
+            color: var(--light-color);
+            font-weight: 500;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 3px;
+            height: 0;
+            top: 0;
+            right: -15px;
+            background-color: var(--accent-color);
+            transition: height 0.3s;
+        }
+
+        nav a:hover::after {
+            height: 100%;
+        }
+
+        nav a.active {
+            color: var(--accent-color);
+        }
+
+        nav a.active::after {
+            height: 100%;
+        }
+
+        /* Content container - takes remaining width */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Gallery container */
+        .gallery-container {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            padding: 15px 15px 20px 15px;
+            /* Added bottom padding */
+            overflow: hidden;
+        }
+
+        .gallery-header {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .counter {
+            font-size: 0.9rem;
+            color: var(--light-color);
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--dark-accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--accent-color);
+            color: var(--dark-accent);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: var(--secondary-color);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Gallery layout - fixed height approach */
+        .gallery-layout {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        /* Fixed height image container */
+        .gallery-image-container {
+            flex-basis: 70%;
+            background-color: var(--dark-accent);
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .gallery-details {
+            flex-basis: 30%;
+            padding: 20px;
+            background-color: var(--dark-accent);
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            /* Important for proper flex behavior */
+            height: fit-content;
+            /* Allow content to determine height */
+        }
+
+        /* Optimized image sizing */
+        .gallery-image {
+            max-height: 100%;
+            max-width: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            transition: opacity 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .details-label {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .details-value {
+            margin-bottom: 20px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            /* Ensure text wraps */
+            overflow-wrap: break-word;
+            /* Modern browsers */
+        }
+
+        /* About section - Improved for better display of content */
+        .about-container {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            padding: 15px 15px 0 15px;
+            overflow: hidden;
+        }
+
+        .about-content-wrapper {
+            background-color: var(--dark-accent);
+            padding: 30px;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Improved heading styles for About section */
+        .about-content-wrapper h1 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            font-weight: 300;
+            font-size: 2rem;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        .about-content-wrapper h2 {
+            color: var(--light-color);
+            margin: 25px 0 15px;
+            font-weight: 500;
+            font-size: 1.5rem;
+        }
+
+        .about-content-wrapper h3 {
+            color: var(--light-color);
+            margin: 20px 0 10px;
+            font-weight: 500;
+            font-size: 1.3rem;
+        }
+
+        .about-content-wrapper p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+
+        .about-content-wrapper br {
+            content: "";
+            display: block;
+            margin-bottom: 0.5em;
+        }
+
+        .about-content-wrapper a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .about-content-wrapper a:hover {
+            text-decoration: underline;
+            opacity: 0.9;
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 50px 20px;
+            font-style: italic;
+            color: var(--light-color);
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark-accent);
+            text-align: center;
+            padding: 12px 0;
+            flex-shrink: 0;
+            margin-top: auto;
+            /* Push footer to bottom of container */
+        }
+
+        footer p {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* NEW MOBILE STYLES */
+        /* Responsive design improvements */
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+                height: auto;
+                overflow-y: auto;
+            }
+
+            /* Navigation improvements */
+            nav {
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 10px 15px;
+                align-items: center;
+            }
+
+            .site-title {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border-bottom: none;
+                font-size: 1.2rem;
+            }
+
+            .nav-links {
+                display: flex;
+                gap: 10px;
+            }
+
+            nav a {
+                margin: 0;
+                padding: 8px 12px;
+            }
+
+            nav a::after {
+                width: 0;
+                height: 3px;
+                top: auto;
+                right: auto;
+                bottom: -5px;
+                left: 0;
+                transition: width 0.3s;
+            }
+
+            nav a:hover::after,
+            nav a.active::after {
+                width: 100%;
+                height: 3px;
+            }
+
+            /* Content area improvements */
+            .content-area {
+                height: auto;
+                min-height: calc(100vh - 60px);
+                /* Account for nav height */
+            }
+
+            /* Gallery layout improvements */
+            .gallery-layout {
+                flex-direction: column;
+                height: auto;
+                overflow-y: auto;
+                gap: 15px;
+            }
+
+            .gallery-image-container {
+                flex-basis: auto;
+                width: 100%;
+                height: 50vh;
+                margin-bottom: 0;
+            }
+
+            .gallery-details {
+                flex-basis: auto;
+                width: 100%;
+                height: auto;
+                margin-bottom: 70px;
+                /* Make room for the fixed button bar */
+            }
+
+            /* Mobile navigation buttons */
+            .controls {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background-color: var(--dark-accent);
+                padding: 10px 15px;
+                z-index: 100;
+                margin-bottom: 0;
+                justify-content: space-between;
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+            }
+
+            .controls button {
+                flex: 1;
+                justify-content: center;
+            }
+
+            /* Counter repositioning */
+            .counter {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background-color: rgba(39, 50, 56, 0.7);
+                padding: 5px 10px;
+                border-radius: 15px;
+                margin-bottom: 0;
+            }
+
+            /* About page mobile improvements */
+            .about-content-wrapper {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            /* Footer adjustments */
+            footer {
+                padding: 10px 0;
+                margin-bottom: 60px;
+                /* Make room for fixed navigation */
+            }
+        }
+
+        /* For very small screens */
+        @media (max-width: 480px) {
+            .site-title {
+                font-size: 1rem;
+            }
+
+            nav a {
+                padding: 6px 10px;
+                font-size: 0.9rem;
+            }
+
+            .gallery-image-container {
+                height: 40vh;
+            }
+
+            button {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <!-- Left Side Navigation -->
+        <nav>
+            <h1 class="site-title">Ivan<span>Fedotov</span></h1>
+            <div class="nav-links">
+                <a href="#" id="about-link">Обо мне</a>
+                <a href="#" id="gallery-link" class="active">Галерея</a>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <!-- About Section -->
+            <div class="about-container" id="about">
+                <div class="about-content-wrapper">
+                    <div id="about-content">
+                        <div class="loading">Загрузка информации...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery Section -->
+            <div class="gallery-container" id="gallery">
+                <div class="gallery-header">
+                    <div class="counter">
+                        Работа <span id="current">1</span> из <span id="total">0</span>
+                    </div>
+                    <div class="controls">
+                        <button id="prev-btn" disabled>
+                            <i class="fas fa-chevron-left"></i> Предыдущая
+                        </button>
+                        <button id="next-btn" disabled>
+                            Следующая <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="gallery-layout">
+                    <div class="gallery-image-container">
+                        <img src="" alt="Artwork" class="gallery-image" id="current-image" />
+                    </div>
+
+                    <div class="gallery-details">
+                        <div class="details-label">Описание</div>
+                        <div class="details-value" id="current-caption"></div>
+
+                        <div class="details-label">Год</div>
+                        <div class="details-value" id="current-year"></div>
+
+                        <div class="details-label">Цена</div>
+                        <div class="details-value" id="current-price"></div>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading-message">
+                    Загрузка работ...
+                </div>
+            </div>
+
+            <footer>
+                <p>&copy; <span id="current-year-footer">2025</span> Иван Федотов. Все права защищены.</p>
+            </footer>
+        </div>
+    </main>
+
+    <script>
+        // Global variables
+        let galleryData = [];
+        let currentIndex = 0;
+        let aboutContentLoaded = false;
+
+        // DOM Elements
+        const imageElement = document.getElementById('current-image');
+        const captionElement = document.getElementById('current-caption');
+        const yearElement = document.getElementById('current-year');
+        const priceElement = document.getElementById('current-price');
+        const prevButton = document.getElementById('prev-btn');
+        const nextButton = document.getElementById('next-btn');
+        const currentIndexElement = document.getElementById('current');
+        const totalImagesElement = document.getElementById('total');
+        const galleryLink = document.getElementById('gallery-link');
+        const aboutLink = document.getElementById('about-link');
+        const galleryContainer = document.getElementById('gallery');
+        const aboutContainer = document.getElementById('about');
+        const aboutContentDiv = document.getElementById('about-content');
+        const loadingMessage = document.getElementById('loading-message');
+        const currentYearElement = document.getElementById('current-year-footer');
+
+        // Set current year in footer
+        currentYearElement.textContent = new Date().getFullYear();
+
+        // Load gallery data from the manifest file
+        async function loadGalleryData() {
+            try {
+                const response = await fetch('gallery/manifest.json');
+                if (!response.ok) {
+                    throw new Error('Failed to load gallery data');
+                }
+                galleryData = await response.json();
+
+                if (galleryData.length > 0) {
+                    totalImagesElement.textContent = galleryData.length;
+                    loadingMessage.style.display = 'none';
+                    enableButtons();
+                    displayImage(0);
+                } else {
+                    loadingMessage.textContent = 'Работы не найдены.';
+                }
+            } catch (error) {
+                console.error('Error loading gallery:', error);
+                loadingMessage.textContent = 'Ошибка загрузки галереи. Попробуйте позже.';
+            }
+        }
+
+        // Load About Me content from markdown file
+        async function loadAboutContent() {
+            console.log("Starting to load about.md content...");
+            aboutContentDiv.innerHTML = '<div class="loading">Загрузка информации...</div>';
+
+            try {
+                // Fetch about.md with cache-busting query parameter
+                const response = await fetch('about.md?v=' + new Date().getTime());
+                console.log("Fetch response:", response);
+
+                if (!response.ok) {
+                    throw new Error('Failed to load about content: ' + response.status);
+                }
+
+                const markdownText = await response.text();
+                console.log("Markdown content loaded, length:", markdownText.length);
+
+                if (!markdownText || markdownText.trim() === '') {
+                    throw new Error('Empty content received from about.md');
+                }
+
+                // Convert markdown to HTML
+                const htmlContent = convertMarkdownToHtml(markdownText);
+                aboutContentDiv.innerHTML = htmlContent;
+
+                // Make links start with @ symbol clickable as Instagram links
+                makeInstagramLinksClickable();
+                console.log("About content loaded successfully!");
+                aboutContentLoaded = true;
+            } catch (error) {
+                console.error("Error loading about content:", error);
+                aboutContentDiv.innerHTML = '<p>Ошибка загрузки about.md. Проверьте, что файл существует в корневой директории сайта.</p>' +
+                    '<p>Технические детали ошибки: ' + error.message + '</p>';
+                aboutContentLoaded = false;
+            }
+        }
+
+        // Make Instagram handles clickable
+        function makeInstagramLinksClickable() {
+            const paragraphs = aboutContentDiv.querySelectorAll('p');
+            paragraphs.forEach(p => {
+                const html = p.innerHTML;
+                // Find Instagram handles and make them clickable
+                p.innerHTML = html.replace(/@([a-zA-Z0-9._]+)/g,
+                    '<a href="https://instagram.com/$1" target="_blank">@$1</a>');
+            });
+        }
+
+        // Improved markdown to HTML converter with better support for Cyrillic
+        function convertMarkdownToHtml(markdown) {
+            // Handle line breaks first to preserve formatting
+            let html = markdown.replace(/\r\n/g, '\n');
+
+            // Convert headers
+            html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+            html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+            html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+
+            // Convert bold and italic
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // Convert links
+            html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+
+            // Process paragraphs - this approach preserves empty lines and formatting better
+            const paragraphs = html.split(/\n\n+/);
+            html = paragraphs.map(p => {
+                // Skip if it's already a header or empty
+                if (p.trim() === '' || p.startsWith('<h')) return p;
+                // Handle line breaks within a paragraph (preserve them as <br>)
+                return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+            }).join('\n\n');
+
+            return html;
+        }
+
+        // Display image at given index
+        function displayImage(index) {
+            if (index >= 0 && index < galleryData.length) {
+                // Fade out the current image/details
+                imageElement.style.opacity = '0';
+                captionElement.style.opacity = '0';
+                yearElement.style.opacity = '0';
+                priceElement.style.opacity = '0';
+
+                setTimeout(() => {
+                    imageElement.src = galleryData[index].image;
+
+                    // Parse the description text to extract fields
+                    const artworkData = parseArtworkData(galleryData[index].caption);
+
+                    captionElement.textContent =
+                        artworkData.description || 'Описание отсутствует';
+                    yearElement.textContent =
+                        artworkData.year || 'Не указано';
+                    priceElement.textContent =
+                        artworkData.price || 'Цена по запросу';
+
+                    currentIndexElement.textContent = index + 1;
+                    currentIndex = index;
+
+                    // Fade back in once the new image is loaded
+                    imageElement.onload = () => {
+                        imageElement.style.opacity = '1';
+                        captionElement.style.opacity = '1';
+                        yearElement.style.opacity = '1';
+                        priceElement.style.opacity = '1';
+                    };
+                }, 300);
+            }
+        }
+
+        // Parse artwork data from caption text
+        function parseArtworkData(text) {
+            const data = {
+                description: '',
+                year: '',
+                price: ''
+            };
+
+            // First check if we have a structured format with the description: prefix
+            if (text.toLowerCase().includes('description:')) {
+                // This is a structured format
+                const descriptionMatch = text.match(/description:([\s\S]*?)(?=year:|price:|$)/i);
+                const yearMatch = text.match(/year:([\s\S]*?)(?=description:|price:|$)/i);
+                const priceMatch = text.match(/price:([\s\S]*?)(?=description:|year:|$)/i);
+
+                if (descriptionMatch) data.description = descriptionMatch[1].trim();
+                if (yearMatch) data.year = yearMatch[1].trim();
+                if (priceMatch) data.price = priceMatch[1].trim();
+            } else {
+                // For unstructured entries, try to intelligently parse the content
+                const lines = text.split('\n');
+
+                // For unstructured entries, the first line is usually the title/description
+                data.description = lines[0].trim();
+
+                // Look for price information (usually contains currency symbol or numbers followed by 'р')
+                const priceRegex = /(\d[\d\s,.]*\s*[₽рr])/i;
+                const priceMatch = text.match(priceRegex);
+                if (priceMatch) {
+                    data.price = priceMatch[1].trim();
+
+                    // If we found a price, remove it from the description if it was part of the first line
+                    if (data.description.includes(data.price)) {
+                        data.description = data.description.replace(data.price, '').trim();
+                        // Remove trailing commas or periods
+                        data.description = data.description.replace(/[,.]$/, '').trim();
+                    }
+                }
+
+                // Look for year (4 digit number)
+                const yearRegex = /\b(20\d{2})\b/;
+                const yearMatch = text.match(yearRegex);
+                if (yearMatch) {
+                    data.year = yearMatch[1];
+                }
+
+                // If still no year but there's a size specification (like 150x150), use that for the year field
+                // since it's better than leaving it empty
+                if (!data.year) {
+                    const sizeRegex = /(\d+\s*[xхX]\s*\d+)/;
+                    const sizeMatch = text.match(sizeRegex);
+                    if (sizeMatch) {
+                        data.year = sizeMatch[1] + ' см';
+                    }
+                }
+            }
+
+            return data;
+        }
+
+        // Enable navigation buttons
+        function enableButtons() {
+            prevButton.disabled = false;
+            nextButton.disabled = false;
+        }
+
+        // Set up event listeners
+        prevButton.addEventListener('click', () => {
+            const newIndex = (currentIndex - 1 + galleryData.length) % galleryData.length;
+            displayImage(newIndex);
+        });
+
+        nextButton.addEventListener('click', () => {
+            const newIndex = (currentIndex + 1) % galleryData.length;
+            displayImage(newIndex);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (galleryContainer.style.display === 'flex') {
+                if (e.key === 'ArrowLeft') {
+                    prevButton.click();
+                } else if (e.key === 'ArrowRight') {
+                    nextButton.click();
+                }
+            }
+        });
+
+        galleryLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            galleryContainer.style.display = 'flex';
+            aboutContainer.style.display = 'none';
+            galleryLink.classList.add('active');
+            aboutLink.classList.remove('active');
+
+            // Load gallery data if not loaded yet
+            if (galleryData.length === 0) {
+                loadGalleryData();
+            }
+        });
+
+        aboutLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            galleryContainer.style.display = 'none';
+            aboutContainer.style.display = 'flex';
+            aboutLink.classList.add('active');
+            galleryLink.classList.remove('active');
+
+            // Load about content if not loaded yet or retry if it failed
+            if (!aboutContentLoaded) {
+                loadAboutContent();
+            }
+        });
+
+        // Initialize the page
+        window.addEventListener('load', () => {
+            // Add debugging info to the console
+            console.log("Page loaded. Will attempt to load about.md...");
+
+            // Load the Gallery view first (changed from About)
+            galleryLink.click();
+
+            // Load the About content (but don't display it yet)
+            setTimeout(() => {
+                loadAboutContent();
+            }, 500); // Small delay to ensure DOM is fully ready
+
+            // Add CSS transitions
+            imageElement.style.transition = 'opacity 0.3s ease';
+            captionElement.style.transition = 'opacity 0.3s ease';
+            yearElement.style.transition = 'opacity 0.3s ease';
+            priceElement.style.transition = 'opacity 0.3s ease';
+
+            // Check if we're on a mobile device and add mobile-specific class
+            if (window.innerWidth <= 768) {
+                document.body.classList.add('mobile-view');
+            }
+
+            // Listen for window resize to handle orientation changes
+            window.addEventListener('resize', () => {
+                if (window.innerWidth <= 768) {
+                    document.body.classList.add('mobile-view');
+                } else {
+                    document.body.classList.remove('mobile-view');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
