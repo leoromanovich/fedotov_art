@@ -341,8 +341,7 @@
             opacity: 0.8;
         }
 
-        /* NEW MOBILE STYLES */
-        /* Responsive design improvements */
+        /* MOBILE STYLES - IMPROVED */
         @media (max-width: 768px) {
             main {
                 flex-direction: column;
@@ -357,6 +356,9 @@
                 justify-content: space-between;
                 padding: 10px 15px;
                 align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 100;
             }
 
             .site-title {
@@ -396,21 +398,29 @@
             .content-area {
                 height: auto;
                 min-height: calc(100vh - 60px);
-                /* Account for nav height */
+                overflow-y: auto;
+            }
+
+            /* Gallery container improvements */
+            .gallery-container {
+                overflow-y: auto;
+                /* padding-bottom: 80px; */
+                /* Make room for fixed controls */
             }
 
             /* Gallery layout improvements */
             .gallery-layout {
                 flex-direction: column;
                 height: auto;
-                overflow-y: auto;
+                overflow-y: visible;
                 gap: 15px;
             }
 
             .gallery-image-container {
                 flex-basis: auto;
                 width: 100%;
-                height: 50vh;
+                height: 65vh;
+                /* Increased from 50vh to show larger images */
                 margin-bottom: 0;
             }
 
@@ -418,11 +428,12 @@
                 flex-basis: auto;
                 width: 100%;
                 height: auto;
-                margin-bottom: 70px;
-                /* Make room for the fixed button bar */
+                /* padding-bottom: 25px; */
+                max-height: none;
+                /* overflow-y: visible; */
             }
 
-            /* Mobile navigation buttons */
+            /* Mobile controls */
             .controls {
                 position: fixed;
                 bottom: 0;
@@ -455,12 +466,14 @@
             /* About page mobile improvements */
             .about-content-wrapper {
                 padding: 20px;
-                margin-bottom: 15px;
+                margin-bottom: 80px;
+                /* Make room for footer */
             }
 
             /* Footer adjustments */
             footer {
                 padding: 10px 0;
+                position: relative;
                 margin-bottom: 60px;
                 /* Make room for fixed navigation */
             }
@@ -478,12 +491,24 @@
             }
 
             .gallery-image-container {
-                height: 40vh;
+                height: 55vh;
+                /* Still increased from original 40vh */
+                padding: 10px;
+                /* Smaller padding to maximize image space */
             }
 
             button {
                 padding: 8px 12px;
                 font-size: 0.9rem;
+            }
+
+            .details-label {
+                margin-top: 12px;
+                /* Increase spacing between sections */
+            }
+
+            .details-value {
+                margin-bottom: 0px;
             }
         }
     </style>
